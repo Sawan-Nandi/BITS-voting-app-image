@@ -18,7 +18,7 @@ pipeline {
                     sh """
                         git config --global credential.helper store
                         git clone https://github.com/${GITHUB_REPO}.git
-                        cd ${GITHUB_REPO}
+                        cd BITS-voting-app-image
                         git config user.name "Jenkins"
                         git config user.email "jenkins@example.com"
                     """
