@@ -6,6 +6,7 @@ pipeline {
         SERVICE_ACCOUNT = credentials('bits-jenkins-sa-key')
         GITHUB_REPO = 'Sawan-Nandi/BITS-voting-app-image'
         GITHUB_CREDENTIALS = credentials('github-jenkins-pat')
+        NEW_TAG = '' // Placeholder for the tag value
     }
     triggers {
         githubPush() // This triggers the pipeline when changes are pushed to the repository
@@ -68,6 +69,9 @@ pipeline {
 
                             echo "New version tag: ${newTag}"
 
+                            // Set the newTag as an environment variable to make it accessible globally
+                            env.NEW_TAG = newTag
+
                             // Build the container image for the modified microservice
                             sh """
                                 gcloud auth activate-service-account --key-file=${SERVICE_ACCOUNT}
@@ -97,8 +101,8 @@ pipeline {
                     sh """
                         git config --global user.name "Jenkins"
                         git config --global user.email "jenkins@example.com"
-                        git tag ${newTag}
-                        git push origin ${newTag}
+                        git tag ${env.NEW_TAG} // Use the environment variable for the tag
+                        git push origin ${env.NEW_TAG}
                     """
                 }
             }
