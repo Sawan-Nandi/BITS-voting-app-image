@@ -39,7 +39,7 @@ pipeline {
                             echo "Changes detected in ${serviceDir}. Building and pushing ${imageName}."
 
                             // Get the latest image tag for the current service from GCR
-                            gcloud auth activate-service-account --key-file=${SERVICE_ACCOUNT}
+                            sh "gcloud auth activate-service-account --key-file=${SERVICE_ACCOUNT}"
                             def lastTag = sh(script: "gcloud container images list-tags ${imageName} --limit=1 --format='value(tags)'", returnStdout: true).trim()
                             def newTag = 'v1'
 
