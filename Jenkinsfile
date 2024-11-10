@@ -6,7 +6,7 @@ pipeline {
         SERVICE_ACCOUNT = credentials('bits-jenkins-sa-key')
         GITHUB_REPO = 'Sawan-Nandi/BITS-voting-app-image'
         GITHUB_CREDENTIALS = credentials('github-jenkins-pat')
-        NEW_TAG = '' // Placeholder for the tag value
+        GITHUB_TOKEN = credentials('github-jenkins-pat')
     }
     triggers {
         githubPush() // This triggers the pipeline when changes are pushed to the repository
@@ -69,9 +69,6 @@ pipeline {
 
                             echo "New version tag: ${newTag}"
 
-                            // Set the newTag as an environment variable to make it accessible globally
-                            env.NEW_TAG = newTag
-
                             // Build the container image for the modified microservice
                             sh """
                                 gcloud auth activate-service-account --key-file=${SERVICE_ACCOUNT}
@@ -95,14 +92,28 @@ pipeline {
     post {
         success {
             script {
-                // Once all stages are successful, create and push the Git tag
-                echo "Pipeline completed successfully! Creating and pushing Git tag."
+                // Create and push a new Git tag (independent of the image tag)
+                echo "Creating and pushing Git tag."
+                
+                // Fetch the latest Git tag
+                def latestTag = sh(script: "git describe --tags --abbrev=0", returnStdout: true).trim()
+                def newGitTag = 'v1'
+
+                if (latestTag) {
+                    // Increment the version by 1 for Git tag
+                    def version = latestTag.replaceAll("[^0-9]", "")
+                    newGitTag = "v${version.toInteger() + 1}"
+                }
+
+                echo "New Git tag: ${newGitTag}"
+
+                // Create and push the new Git tag
                 withCredentials([string(credentialsId: 'github-jenkins-pat', variable: 'GITHUB_TOKEN')]) {
                     sh """
                         git config --global user.name "Jenkins"
                         git config --global user.email "jenkins@example.com"
-                        git tag ${env.NEW_TAG} // Use the environment variable for the tag
-                        git push origin ${env.NEW_TAG}
+                        git tag ${newGitTag}
+                        git push origin ${newGitTag}
                     """
                 }
             }
