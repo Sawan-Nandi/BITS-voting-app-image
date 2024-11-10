@@ -64,7 +64,7 @@ pipeline {
                             """
 
                             // Create a new GitHub tag for this version
-                            withCredentials([string(credentialsId: 'github-jenkins-token', variable: 'GITHUB_TOKEN')]) {
+                            withCredentials([string(credentialsId: 'github-jenkins-pat', variable: 'GITHUB_TOKEN')]) {
                                 sh """
                                     git tag ${newTag}
                                     git push origin ${newTag}
