@@ -91,32 +91,7 @@ pipeline {
     
     post {
         success {
-            script {
-                // Create and push a new Git tag (independent of the image tag)
-                echo "Creating and pushing Git tag."
-                
-                // Fetch the latest Git tag
-                def latestTag = sh(script: "git describe --tags --abbrev=0", returnStdout: true).trim()
-                def newGitTag = 'v1'
-
-                if (latestTag) {
-                    // Increment the version by 1 for Git tag
-                    def version = latestTag.replaceAll("[^0-9]", "")
-                    newGitTag = "v${version.toInteger() + 1}"
-                }
-
-                echo "New Git tag: ${newGitTag}"
-
-                // Create and push the new Git tag
-                withCredentials([string(credentialsId: 'github-jenkins-pat', variable: 'GITHUB_TOKEN')]) {
-                    sh """
-                        git config --global user.name "Jenkins"
-                        git config --global user.email "jenkins@example.com"
-                        git tag ${newGitTag}
-                        git push origin ${newGitTag}
-                    """
-                }
-            }
+            echo "Pipeline success. Check logs for details."
         }
         failure {
             echo "Pipeline failed. Check logs for details."
