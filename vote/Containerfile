@@ -1,4 +1,4 @@
-# base defines a base stage that uses the official python runtime base image , test 5
+# base defines a base stage that uses the official python runtime base image , test 6
 FROM python:3.11-slim AS base
 
 # Add curl for healthcheck
