@@ -11,17 +11,25 @@ pipeline {
         githubPush() // This triggers the pipeline when changes are pushed to the repository
     }
     stages {
-        stage('Checkout') {
+        stage('Cleanup and Checkout') {
             steps {
-                // Checkout the repository using the GitHub credentials
-                withCredentials([string(credentialsId: 'github-jenkins-pat', variable: 'GITHUB_TOKEN')]) {
-                    sh """
-                        git config --global credential.helper store
-                        git clone https://github.com/${GITHUB_REPO}.git
-                        pwd
-                        git config user.name "Jenkins"
-                        git config user.email "jenkins@example.com"
-                    """
+                // Cleanup any existing repository if already cloned
+                script {
+                    def repoDir = 'BITS-voting-app-image'
+                    if (fileExists(repoDir)) {
+                        echo "Removing existing repository directory: ${repoDir}"
+                        sh "rm -rf ${repoDir}" // Remove the existing cloned repo
+                    }
+                    
+                    // Now clone the repository
+                    withCredentials([string(credentialsId: 'github-jenkins-pat', variable: 'GITHUB_TOKEN')]) {
+                        sh """
+                            git clone https://github.com/${GITHUB_REPO}.git
+                            cd ${repoDir}
+                            git config user.name "Jenkins"
+                            git config user.email "jenkins@example.com"
+                        """
+                    }
                 }
             }
         }
