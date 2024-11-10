@@ -54,13 +54,13 @@ pipeline {
                             // Build the container image for the modified microservice
                             sh """
                                 gcloud auth activate-service-account --key-file=${SERVICE_ACCOUNT}
-                                podman build -t ${imageName}:${newTag} -f ${serviceDir}/Containerfile ${serviceDir}
+                                docker build -t ${imageName}:${newTag} -f ${serviceDir}/Containerfile ${serviceDir}
                             """
                             
                             // Push the image to GCR
                             sh """
                                 gcloud auth configure-docker ${GCR_REGION}
-                                podman push ${imageName}:${newTag}
+                                docker push ${imageName}:${newTag}
                             """
 
                             // Create a new GitHub tag for this version
