@@ -14,7 +14,7 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                git branch: 'main', url: 'https://github.com/Sawan-Nandi/BITS-voting-app-image.git'
+                git branch: 'master', url: 'https://github.com/Sawan-Nandi/BITS-voting-app-image.git'
             }
         }
         stage('Detect Changes and Build Images') {
