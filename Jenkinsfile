@@ -9,6 +9,7 @@ pipeline {
     }
     triggers {
         // The GitHub webhook will trigger the build
+        githubPush() // This triggers the pipeline when changes are pushed to the repository
     }
     stages {
         stage('Checkout') {
