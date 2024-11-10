@@ -8,15 +8,24 @@ pipeline {
         GITHUB_CREDENTIALS = credentials('github-jenkins-pat')
     }
     triggers {
-        // The GitHub webhook will trigger the build
         githubPush() // This triggers the pipeline when changes are pushed to the repository
     }
     stages {
         stage('Checkout') {
             steps {
-                git branch: 'master', url: 'https://github.com/Sawan-Nandi/BITS-voting-app-image.git'
+                // Checkout the repository using the GitHub credentials
+                withCredentials([string(credentialsId: 'github-jenkins-pat', variable: 'GITHUB_TOKEN')]) {
+                    sh """
+                        git config --global credential.helper store
+                        git clone https://github.com/${GITHUB_REPO}.git
+                        cd ${GITHUB_REPO}
+                        git config user.name "Jenkins"
+                        git config user.email "jenkins@example.com"
+                    """
+                }
             }
         }
+
         stage('Detect Changes and Build Images') {
             steps {
                 script {
@@ -62,16 +71,6 @@ pipeline {
                                 gcloud auth configure-docker ${GCR_REGION}
                                 docker push ${imageName}:${newTag}
                             """
-
-                            // Create a new GitHub tag for this version
-                            withCredentials([string(credentialsId: 'github-jenkins-pat', variable: 'GITHUB_TOKEN')]) {
-                                sh """
-                                    git tag ${newTag}
-                                    git push origin ${newTag}
-                                """
-                            }
-
-                            echo "GitHub tag ${newTag} created and pushed."
                         } else {
                             echo "No changes detected in ${serviceDir}. Skipping build."
                         }
@@ -80,9 +79,21 @@ pipeline {
             }
         }
     }
+    
     post {
         success {
-            echo "Pipeline completed successfully!"
+            script {
+                // Once all stages are successful, create and push the Git tag
+                echo "Pipeline completed successfully! Creating and pushing Git tag."
+                withCredentials([string(credentialsId: 'github-jenkins-pat', variable: 'GITHUB_TOKEN')]) {
+                    sh """
+                        git config --global user.name "Jenkins"
+                        git config --global user.email "jenkins@example.com"
+                        git tag ${newTag}
+                        git push origin ${newTag}
+                    """
+                }
+            }
         }
         failure {
             echo "Pipeline failed. Check logs for details."
